@@ -22,17 +22,16 @@ function main(){
     gl.enableVertexAttribArray(positionLocation);
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-  
-    const uniformLocations = {
-        matrix: gl.getUniformLocation(program, `matrix`),
-        color: gl.getUniformLocation(program, `color`),
-    };
-    let matrix = mat4.fromValues(
+    
+    const matrixUniformLocation = gl.getUniformLocation(program, `matrix`);
+    const colorUniformLocation = gl.getUniformLocation(program, `color`);
+    
+    let matrix = [
         2/canvas.width, 0, 0, 0,
         0, -2/canvas.height, 0, 0,
         0, 0, 0, 0,
         -1, 1, 0, 1
-    );
+    ];
 
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -91,8 +90,8 @@ function main(){
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionVector), gl.STATIC_DRAW);
-      gl.uniformMatrix4fv(uniformLocations.matrix, false, matrix);
-      gl.uniform3fv(uniformLocations.color,colorVector);
+      gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
+      gl.uniform3fv(colorUniformLocation,colorVector);
       gl.drawArrays(gl.POINTS, 0, 1);
     }
   
