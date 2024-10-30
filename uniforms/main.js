@@ -32,24 +32,29 @@ function main(){
         0, 0, 0, 0,
         -1, 1, 0, 1
     ];
+    gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
 
+    gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    let positionVector = [canvas.width/2,canvas.height/2];
+    gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionVector), gl.STATIC_DRAW);
+    let colorVector = [0.0,0.0,0.0];
+    gl.uniform3fv(colorUniformLocation,colorVector);
     
     canvas.addEventListener("mousedown",mouseClick,false);
   
-    let positionVector = [canvas.width/2,canvas.height/2];
     function mouseClick(event){
       positionVector = [event.offsetX,event.offsetY];
+      gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionVector), gl.STATIC_DRAW);
       drawPoint();
     }
   
     const bodyElement = document.querySelector("body");
     bodyElement.addEventListener("keydown",keyDown,false);
   
-    let colorVector = [0.0,0.0,0.0];
     function keyDown(event){
       switch(event.key){
         case "0":
@@ -83,15 +88,12 @@ function main(){
           colorVector = [0.5,0.5,1.0];
           break;
       }
+      gl.uniform3fv(colorUniformLocation,colorVector);
       drawPoint();
     }
   
     function drawPoint(){
       gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positionVector), gl.STATIC_DRAW);
-      gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
-      gl.uniform3fv(colorUniformLocation,colorVector);
       gl.drawArrays(gl.POINTS, 0, 1);
     }
   
