@@ -42,7 +42,7 @@ function main(){
   
     let positionVector = [canvas.width/2,canvas.height/2];
     function mouseClick(event){
-      positionVector = [event.clientX,event.clientY];
+      positionVector = [event.offsetX,event.offsetY];
       drawPoint();
     }
   

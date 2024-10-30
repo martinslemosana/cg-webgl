@@ -34,16 +34,68 @@ function main(){
     
     canvas.addEventListener("mousedown",mouseClick,false);
   
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0]), gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0.0,0.0,0.0]), gl.STATIC_DRAW);
+
     function mouseClick(event){
-      console.log(event);
+      console.log(event.offsetX,event.offsetY);
+      let x = (2/canvas.width * event.offsetX) - 1;
+      let y = (-2/canvas.height * event.offsetY) + 1;
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([x,y]), gl.STATIC_DRAW);
+      drawPoints();
     }
   
     const bodyElement = document.querySelector("body");
     bodyElement.addEventListener("keydown",keyDown,false);
 
+    let colorVector = [0.0,0.0,0.0];
     function keyDown(event){
-      console.log(event);
+      switch(event.key){
+        case "0":
+          colorVector = [0.0,0.0,0.0];
+          break;
+        case "1":
+          colorVector = [1.0,0.0,0.0];
+          break;
+        case "2":
+          colorVector = [0.0,1.0,0.0];
+          break;
+        case "3":
+          colorVector = [0.0,0.0,1.0];
+          break;
+        case "4":
+          colorVector = [1.0,1.0,0.0];
+          break;
+        case "5":
+          colorVector = [0.0,1.0,1.0];
+          break;
+        case "6":
+          colorVector = [1.0,0.0,1.0];
+          break;
+        case "7":
+          colorVector = [1.0,0.5,0.5];
+          break;
+        case "8":
+          colorVector = [0.5,1.0,0.5];
+          break;
+        case "9":
+          colorVector = [0.5,0.5,1.0];
+          break;
+      }
+      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorVector), gl.STATIC_DRAW);
+      drawPoints();
     }
+
+    function drawPoints(){
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.POINTS, 0, 1);
+    }
+
+    drawPoints();
 }
   
 function createShader(gl, type, source) {
