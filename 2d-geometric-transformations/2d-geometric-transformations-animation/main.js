@@ -76,36 +76,36 @@ function main(){
     }
   
     drawSquare();
+}
+  
+function createShader(gl, type, source) {
+  var shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+  if (success) {
+    return shader;
   }
+
+  console.log(gl.getShaderInfoLog(shader));
+  gl.deleteShader(shader);
+}
   
-  function createShader(gl, type, source) {
-    var shader = gl.createShader(type);
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-    var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
-    if (success) {
-      return shader;
-    }
-  
-    console.log(gl.getShaderInfoLog(shader));
-    gl.deleteShader(shader);
+function createProgram(gl, vertexShader, fragmentShader) {
+  var program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+  if (success) {
+    return program;
   }
+
+  console.log(gl.getProgramInfoLog(program));
+  gl.deleteProgram(program);
+}
   
-  function createProgram(gl, vertexShader, fragmentShader) {
-    var program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-    var success = gl.getProgramParameter(program, gl.LINK_STATUS);
-    if (success) {
-      return program;
-    }
-  
-    console.log(gl.getProgramInfoLog(program));
-    gl.deleteProgram(program);
-  }
-  
-  var m4 = {
+var m4 = {
     identity: function() {
       return [
         1, 0, 0, 0,
@@ -114,7 +114,7 @@ function main(){
         0, 0, 0, 1
       ];
     },
-  
+
     multiply: function(a, b) {
       var a00 = a[0 * 4 + 0];
       var a01 = a[0 * 4 + 1];
@@ -167,20 +167,20 @@ function main(){
         b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33,
       ];
     },
-  
+
     translation: function(tx, ty, tz) {
       return [
-         1,  0,  0,  0,
-         0,  1,  0,  0,
-         0,  0,  1,  0,
-         tx, ty, tz, 1,
+          1,  0,  0,  0,
+          0,  1,  0,  0,
+          0,  0,  1,  0,
+          tx, ty, tz, 1,
       ];
     },
-  
+
     xRotation: function(angleInRadians) {
       var c = Math.cos(angleInRadians);
       var s = Math.sin(angleInRadians);
-  
+
       return [
         1, 0, 0, 0,
         0, c, s, 0,
@@ -188,11 +188,11 @@ function main(){
         0, 0, 0, 1,
       ];
     },
-  
+
     yRotation: function(angleInRadians) {
       var c = Math.cos(angleInRadians);
       var s = Math.sin(angleInRadians);
-  
+
       return [
         c, 0, -s, 0,
         0, 1, 0, 0,
@@ -200,19 +200,19 @@ function main(){
         0, 0, 0, 1,
       ];
     },
-  
+
     zRotation: function(angleInRadians) {
       var c = Math.cos(angleInRadians);
       var s = Math.sin(angleInRadians);
-  
+
       return [
-         c, s, 0, 0,
+          c, s, 0, 0,
         -s, c, 0, 0,
-         0, 0, 1, 0,
-         0, 0, 0, 1,
+          0, 0, 1, 0,
+          0, 0, 0, 1,
       ];
     },
-  
+
     scaling: function(sx, sy, sz) {
       return [
         sx, 0,  0,  0,
@@ -221,35 +221,35 @@ function main(){
         0,  0,  0,  1,
       ];
     },
-  
+
     translate: function(m, tx, ty, tz) {
       return m4.multiply(m, m4.translation(tx, ty, tz));
     },
-  
+
     xRotate: function(m, angleInRadians) {
       return m4.multiply(m, m4.xRotation(angleInRadians));
     },
-  
+
     yRotate: function(m, angleInRadians) {
       return m4.multiply(m, m4.yRotation(angleInRadians));
     },
-  
+
     zRotate: function(m, angleInRadians) {
       return m4.multiply(m, m4.zRotation(angleInRadians));
     },
-  
+
     scale: function(m, sx, sy, sz) {
       return m4.multiply(m, m4.scaling(sx, sy, sz));
     },
+
+};
   
-  };
-  
-  function radToDeg(r) {
-    return r * 180 / Math.PI;
-  }
-  
-  function degToRad(d) {
-    return d * Math.PI / 180;
-  }
-  
-  main();
+function radToDeg(r) {
+  return r * 180 / Math.PI;
+}
+
+function degToRad(d) {
+  return d * Math.PI / 180;
+}
+
+main();
