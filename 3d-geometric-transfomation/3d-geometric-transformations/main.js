@@ -1,6 +1,6 @@
 function main(){
     const canvas = document.querySelector("#canvas");
-    const gl = canvas.getContext('webgl');
+    const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true });
   
     if (!gl) {
         throw new Error('WebGL not supported');
@@ -114,6 +114,7 @@ function main(){
     let ty_step = 0.02;
   
     function drawCube(){
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   
       theta += 2.0;
       if(tx > 1.0 || tx < -1.0)

@@ -1,0 +1,62 @@
+<!DOCTYPE <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>WebGL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="main.js" defer></script>
+    <script  id="vertex-shader" type="notjs">
+        precision mediump float;
+
+        attribute vec3 position;
+        attribute vec3 color;
+        varying vec3 vColor;
+        
+        uniform mat4 matrix;
+        
+        void main() {
+            vColor = color;
+            gl_Position = matrix * vec4(position, 1);
+        }
+    </script>
+    <script  id="fragment-shader" type="notjs">
+        precision mediump float;
+
+        varying vec3 vColor;
+        
+        void main() {
+            gl_FragColor = vec4(vColor, 1);
+        }
+    </script>
+    
+</head>
+<body>
+  <div style = "text-align:center;">
+    <h3>Rotação 3D por eixo genérico</h3>
+    <p>
+        <canvas id="canvas" width="500" height="500"></canvas>
+    </p>
+    <p>
+        P1 = (x1, y1, z1)
+    </p>
+    <p>
+        x1 = <input type="text" id="x1" value="0.0" size="10">
+        y1 = <input type="text" id="y1" value="0.0" size="10">
+        z1 = <input type="text" id="z1" value="0.0" size="10">
+    </p>
+    <p>
+        P2 = (x2, y2, z2)
+    </p>
+    <p>
+        x2 = <input type="text" id="x2" value="1.0" size="10">
+        y2 = <input type="text" id="y2" value="0.0" size="10">
+        z2 = <input type="text" id="z2" value="0.0" size="10">
+    </p>
+    <p>
+        <button id="ler_P1_P2">Ler P1 e P2</button>
+    </p>
+  </div>
+</body>
+</html>
