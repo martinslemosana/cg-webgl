@@ -1,32 +1,32 @@
 function main(){
     const canvas = document.querySelector("#canvas");
     const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true });
-   
+    
     if (!gl) {
         throw new Error('WebGL not supported');
     }
-   
+    
     var vertexShaderSource = document.querySelector("#vertex-shader").text;
     var fragmentShaderSource = document.querySelector("#fragment-shader").text;
-   
+    
     var vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-   
+    
     var program = createProgram(gl, vertexShader, fragmentShader);
-   
+    
     gl.useProgram(program);
     
     gl.enable(gl.DEPTH_TEST);
-   
+    
     const positionBuffer = gl.createBuffer();
-   
+    
     const positionLocation = gl.getAttribLocation(program, `position`);
     gl.enableVertexAttribArray(positionLocation);
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
-   
+    
     const colorBuffer = gl.createBuffer();
-   
+    
     const colorLocation = gl.getAttribLocation(program, `color`);
     gl.enableVertexAttribArray(colorLocation);
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
@@ -54,7 +54,7 @@ function main(){
             colorData.push(...faceColor);
         }
     }
-   
+    
     let axesData = [
         -5.0, 0.0, 0.0,
         5.0, 0.0, 0.0,
@@ -63,7 +63,7 @@ function main(){
         0.0, 0.0, 5.0,
         0.0, 0.0,-5.0
     ];
-   
+    
     let axesColors = [
         0.25, 0.25, 0.25,
         0.25, 0.25, 0.25,
@@ -78,24 +78,24 @@ function main(){
         P1[0]-5*v[0], P1[1]-5*v[1], P1[2]-5*v[2],
         P1[0]+5*v[0], P1[1]+5*v[1], P1[2]+5*v[2],
     ];
-   
+    
     let cubeDirectionAxisColors = [
         1.0, 0.0, 0.0,
         1.0, 0.0, 0.0,
     ];
-   
-   
+    
+    
     const bodyElement = document.querySelector("body");
     bodyElement.addEventListener("keydown",keyDown,false);
-   
+    
     let theta = 0.0;
     matrix = defineRotationMatrix(P1,P2,theta);
-   
+    
     function keyDown(event){
         switch(event.key){
             case "ArrowLeft":
-            theta += 5;
-            break;
+                theta += 5;
+                break;
             case "ArrowRight":
                 theta -= 5;
                 break;
@@ -104,10 +104,10 @@ function main(){
         matrix = m4.multiply(matrix,defineRotationMatrix(P1,P2,theta));
         drawCube();
     }
-   
+    
     const buttonElement = document.getElementById("ler_P1_P2");
     buttonElement.addEventListener("click", onClick);
-   
+    
     function onClick(event){
         let x1 = parseFloat(document.getElementById("x1").value);
         let y1 = parseFloat(document.getElementById("y1").value);
@@ -125,7 +125,7 @@ function main(){
         ];
         drawCube();
     }
-   
+    
     function drawCube(){
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         
@@ -136,7 +136,7 @@ function main(){
         matrix = m4.identity();
         gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
         gl.drawArrays(gl.LINES, 0, axesData.length / 3);
-
+    
         gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeDirectionAxis), gl.STATIC_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER,colorBuffer);
@@ -153,24 +153,38 @@ function main(){
         gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
         gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
     }
-   
+    
     drawCube();
 }
-   
+    
 function defineRotationMatrix(P1,P2,theta){
     let m = m4.identity();
 
     let N = [P2[0]-P1[0],P2[1]-P1[1],P2[2]-P1[2]];
     let n = unitVector(N);
 
+    //parallel to z-axis
     if(n[0]==0 && n[1]==0){
-        return m4.zRotation(degToRad(theta));
+        m = m4.translation(P1[0],P1[1],P1[2]);
+        m = m4.multiply(m,m4.zRotation(degToRad(theta)));
+        m = m4.multiply(m,m4.translation(-P1[0],-P1[1],-P1[2]));
+        return m;
     }
+
+    //parallel to y-axis
     if(n[0]==0 && n[2]==0){
-        return m4.yRotation(degToRad(theta));
+        m = m4.translation(P1[0],P1[1],P1[2]);
+        m = m4.multiply(m,m4.yRotation(degToRad(theta)));
+        m = m4.multiply(m,m4.translation(-P1[0],-P1[1],-P1[2]));
+        return m;
     }
+
+    //parallel to x-axis
     if(n[1]==0 && n[2]==0){
-        return m4.xRotation(degToRad(theta));
+        m = m4.translation(P1[0],P1[1],P1[2]);
+        m = m4.multiply(m,m4.xRotation(degToRad(theta)));
+        m = m4.multiply(m,m4.translation(-P1[0],-P1[1],-P1[2]));
+        return m;
     }
 
     let a = n[0];
@@ -218,7 +232,7 @@ function defineRotationMatrix(P1,P2,theta){
 
     return m;
 }
-   
+
 function setCubeVertices(P1,P2,size){
     let vertexData = [];
     vertexData = [
@@ -274,10 +288,23 @@ function setCubeVertices(P1,P2,size){
 
     let N = [P2[0]-P1[0],P2[1]-P1[1],P2[2]-P1[2]];
     let n = unitVector(N);
-    let V = [0.0,1.0,0.0];
-    let u = crossProduct(n,V);
-    u = unitVector(u);
-    let v = crossProduct(u,n);
+
+    let v = [];
+    let u = [];
+
+    //parallel to y-axis
+    if(n[0]==0 && n[2]==0){
+        v = [-1.0,0.0,0.0];
+        u = [0.0,0.0,1.0]; 
+    }
+    else{
+        let V = [0.0,1.0,0.0];
+        u = crossProduct(n,V);
+        u = unitVector(u);
+        v = crossProduct(u,n);
+    }
+
+    console.log(n,v,u);
 
     let rotatedVertexData = [];
     for(let i=0;i<vertexData.length;i+=3){
@@ -337,21 +364,21 @@ function createProgram(gl, vertexShader, fragmentShader) {
 
 var m4 = {
     identity: function() {
-    return [
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-    ];
+        return [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ];
     },
 
     transpose: function(m){
-    return [
-        m[0], m[4], m[8], m[12],
-        m[1], m[5], m[9], m[13],
-        m[2], m[6], m[10], m[14],
-        m[3], m[7], m[11], m[15]
-    ];
+        return [
+            m[0], m[4], m[8], m[12],
+            m[1], m[5], m[9], m[13],
+            m[2], m[6], m[10], m[14],
+            m[3], m[7], m[11], m[15]
+        ];
     },
 
     multiply: function(a, b) {
