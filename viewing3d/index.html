@@ -1,0 +1,41 @@
+<!DOCTYPE <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>WebGL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="main.js" defer></script>
+    <script  id="vertex-shader" type="notjs">
+        precision mediump float;
+
+        attribute vec3 position;
+        attribute vec3 color;
+        varying vec3 vColor;
+        
+        uniform mat4 matrix;
+        
+        void main() {
+            vColor = color;
+            gl_Position = matrix * vec4(position, 1);
+        }
+    </script>
+    <script  id="fragment-shader" type="notjs">
+        precision mediump float;
+
+        varying vec3 vColor;
+        
+        void main() {
+            gl_FragColor = vec4(vColor, 1);
+        }
+    </script>
+    
+</head>
+<body>
+    <div align="center">
+        <h3>Transformações Geométricas 3D</h3>
+        <canvas id="canvas" width="500" height="500"></canvas>
+    </div>
+</body>
+</html>
