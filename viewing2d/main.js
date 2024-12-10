@@ -47,60 +47,107 @@ function main(){
     let faceColor = randomColor();
     colorData = setSquareColor(faceColor);
        
+    let theta = 0.0;
+    let tx = 0.0;
+    let tx_step = 0.01;
+    let ty = 0.0;
+    let ty_step = 0.01;
+    let w = 1.0;
+    let w_step = 0.01;
     let matrix = m4.identity();
-
     function drawSquare(){
         gl.clear(gl.COLOR_BUFFER_BIT);
   
         gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.viewport(0, canvas.height/2, canvas.width/2, canvas.height/2);
+        if(w>=2.0 || w<=0.5)
+          w_step = -w_step;
+        w += w_step;
         gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
         gl.bindBuffer(gl.ARRAY_BUFFER,colorBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorData), gl.STATIC_DRAW);
-        matrix = m4.identity();
-        matrix = m4.multiply(matrix,set2dClippingWindow(-1.0,1.0,-1.0,1.0));
-        matrix = m4.multiply(matrix,set2dViewingMatrix([0.0,0.0],0.0));
+        matrix = set2dViewingMatrix([0.0,0.0],0.0);
+        viewingMatrix = set2dViewingMatrix([0.0,0.0],0.0);
+        clippingWindowMatrix = set2dClippingWindow(-w,w,-w,w);
+        matrix = m4.multiply(viewingMatrix,clippingWindowMatrix);
         gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
         gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
+  
+        gl.viewport(canvas.width/2, canvas.height/2, canvas.width/2, canvas.height/2);
+        theta += 2.0;
+        gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER,colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorData), gl.STATIC_DRAW);
+        matrix = set2dViewingMatrix([0.0,0.0],theta);
+        gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
+        gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
+  
+        gl.viewport(0, 0, canvas.width/2, canvas.height/2);
+        if(tx>=1.0 || tx<=-1.0)
+          tx_step = -tx_step;
+        tx += tx_step;
+        gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER,colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorData), gl.STATIC_DRAW);
+        matrix = set2dViewingMatrix([tx,0.0],0.0);
+        gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
+        gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
+  
+        gl.viewport(canvas.width/2, 0, canvas.width/2, canvas.height/2);
+        if(ty>=1.0 || ty<=-1.0)
+          ty_step = -ty_step;
+        ty += ty_step;
+        gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER,colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorData), gl.STATIC_DRAW);
+        matrix = set2dViewingMatrix([0.0,ty],0.0);
+        gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
+        gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
+  
+        requestAnimationFrame(drawSquare);
     }
     
     drawSquare();
-  }
+}
   
-  function setSquareVertices(P,width,height){
+function setSquareVertices(P,width,height){
     let x1 = P[0];
     let y1 = P[1];
     let x2 = x1 + width;
     let y2 = y1 + height;
     let vertexData = [];
     vertexData = [
-      x1, y1, 0.0,
-      x2, y1, 0.0,
-      x1, y2, 0.0,  
-      x1, y2, 0.0,
-      x2, y1, 0.0,
-      x2, y2, 0.0,
+        x1, y1, 0.0,
+        x2, y1, 0.0,
+        x1, y2, 0.0,  
+        x1, y2, 0.0,
+        x2, y1, 0.0,
+        x2, y2, 0.0,
     ]
-  
+
     return vertexData;
-  }
+}
   
-  function setSquareColor(color){
+function setSquareColor(color){
     let colorData = [];
     for (let vertex = 0; vertex < 6; vertex++) {
         colorData.push(...color);
     }
     return colorData;
-  }
+}
   
-  function set2dViewingMatrix(P0, angle){
+function set2dViewingMatrix(P0, angle){
     let m = m4.identity();
     m = m4.zRotate(m,degToRad(-angle));
     m = m4.translate(m,-P0[0],-P0[1],0.0);
     return m;
-  }
+}
   
-  function set2dClippingWindow(xw_min,xw_max,yw_min,yw_max){
+function set2dClippingWindow(xw_min,xw_max,yw_min,yw_max){
     let m = m4.identity();
     m = m4.translate(m,-1.0,-1.0,0.0);
     let sx = 2/(xw_max-xw_min);
@@ -108,9 +155,9 @@ function main(){
     m = m4.scale(m,sx,sy,1.0);
     m = m4.translate(m,-xw_min,-yw_min,0.0);
     return m;
-  }
+}
   
-  function createShader(gl, type, source) {
+function createShader(gl, type, source) {
     var shader = gl.createShader(type);
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
@@ -118,12 +165,12 @@ function main(){
     if (success) {
         return shader;
     }
-  
+
     console.log(gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
-  }
+}
   
-  function createProgram(gl, vertexShader, fragmentShader) {
+function createProgram(gl, vertexShader, fragmentShader) {
     var program = gl.createProgram();
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
@@ -132,12 +179,12 @@ function main(){
     if (success) {
         return program;
     }
-  
+
     console.log(gl.getProgramInfoLog(program));
     gl.deleteProgram(program);
-  }
+}
   
-  var m4 = {
+var m4 = {
     identity: function() {
         return [
             1, 0, 0, 0,
@@ -146,7 +193,7 @@ function main(){
             0, 0, 0, 1
         ];
     },
-  
+
     transpose: function(m){
         return [
             m[0], m[4], m[8], m[12],
@@ -155,7 +202,7 @@ function main(){
             m[3], m[7], m[11], m[15]
         ];
     },
-  
+
     multiply: function(a, b) {
         var a00 = a[0 * 4 + 0];
         var a01 = a[0 * 4 + 1];
@@ -208,7 +255,7 @@ function main(){
             b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33,
         ];
     },
-  
+
     translation: function(tx, ty, tz) {
         return [
             1, 0, 0, 0,
@@ -217,11 +264,11 @@ function main(){
             tx, ty, tz, 1,
         ];
     },
-  
+
     xRotation: function(angleInRadians) {
         var c = Math.cos(angleInRadians);
         var s = Math.sin(angleInRadians);
-  
+
         return [
             1, 0, 0, 0,
             0, c, s, 0,
@@ -229,11 +276,11 @@ function main(){
             0, 0, 0, 1,
         ];
     },
-  
+
     yRotation: function(angleInRadians) {
         var c = Math.cos(angleInRadians);
         var s = Math.sin(angleInRadians);
-  
+
         return [
             c, 0, -s, 0,
             0, 1, 0, 0,
@@ -241,11 +288,11 @@ function main(){
             0, 0, 0, 1,
         ];
     },
-  
+
     zRotation: function(angleInRadians) {
         var c = Math.cos(angleInRadians);
         var s = Math.sin(angleInRadians);
-  
+
         return [
             c, s, 0, 0,
             -s, c, 0, 0,
@@ -253,7 +300,7 @@ function main(){
             0, 0, 0, 1,
         ];
     },
-  
+
     scaling: function(sx, sy, sz) {
         return [
             sx, 0, 0, 0,
@@ -262,35 +309,35 @@ function main(){
             0, 0, 0, 1,
         ];
     },
-  
+
     translate: function(m, tx, ty, tz) {
         return m4.multiply(m, m4.translation(tx, ty, tz));
     },
-  
+
     xRotate: function(m, angleInRadians) {
         return m4.multiply(m, m4.xRotation(angleInRadians));
     },
-  
+
     yRotate: function(m, angleInRadians) {
         return m4.multiply(m, m4.yRotation(angleInRadians));
     },
-  
+
     zRotate: function(m, angleInRadians) {
         return m4.multiply(m, m4.zRotation(angleInRadians));
     },
-  
+
     scale: function(m, sx, sy, sz) {
         return m4.multiply(m, m4.scaling(sx, sy, sz));
     },
+
+};
   
-  };
-  
-  function radToDeg(r) {
+function radToDeg(r) {
     return r * 180 / Math.PI;
-  }
+}
   
-  function degToRad(d) {
+function degToRad(d) {
     return d * Math.PI / 180;
-  }
+}
   
-  main();
+main();
