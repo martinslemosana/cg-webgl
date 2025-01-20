@@ -57,25 +57,58 @@ function main(){
     let colorData = [];
 
     const n_slices_stacks = document.querySelector("#value_slices_stacks");
-    const input = document.querySelector("#n_slices_stacks");
-    n_slices_stacks.textContent = input.value;
-    input.addEventListener("input", (event) => {
+    const input_slices_stacks = document.querySelector("#n_slices_stacks");
+    n_slices_stacks.textContent = input_slices_stacks.value;
+
+    const s1 = document.querySelector("#value_s1");
+    const input_s1 = document.querySelector("#n_s1");
+    s1.textContent = input_s1.value;
+
+    const s2 = document.querySelector("#value_s2");
+    const input_s2 = document.querySelector("#n_s2");
+    s2.textContent = input_s2.value;
+    
+    input_slices_stacks.addEventListener("input", (event) => {
         n_slices_stacks.textContent = event.target.value;
         
-        vertexData = setSphereVertices(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent);
+        vertexData = setSuperConicSphereVertices(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent,s1.textContent,s2.textContent);
         gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
 
-        normalData = setSphereNormals_flat(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent);
+        normalData = setSuperConicSphereNormals_flat(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent,s1.textContent,s2.textContent);
         gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
     });
 
-    vertexData = setSphereVertices(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent);
+    input_s1.addEventListener("input", (event) => {
+        s1.textContent = event.target.value;
+        
+        vertexData = setSuperConicSphereVertices(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent,s1.textContent,s2.textContent);
+        gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
+
+        normalData = setSuperConicSphereNormals_flat(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent,s1.textContent,s2.textContent);
+        gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
+    });
+
+    input_s2.addEventListener("input", (event) => {
+        s2.textContent = event.target.value;
+        
+        vertexData = setSuperConicSphereVertices(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent,s1.textContent,s2.textContent);
+        gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
+
+        normalData = setSuperConicSphereNormals_flat(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent,s1.textContent,s2.textContent);
+        gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
+    });
+
+    vertexData = setSuperConicSphereVertices(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent,s1.textContent,s2.textContent);
     gl.bindBuffer(gl.ARRAY_BUFFER,positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
 
-    normalData = setSphereNormals_flat(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent);
+    normalData = setSuperConicSphereNormals_flat(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent,s1.textContent,s2.textContent);
     gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
     
@@ -122,16 +155,6 @@ function main(){
                 rotateY = 0;
                 rotateZ = 1;
                 break;
-            case "f":
-                normalData = setSphereNormals_flat(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent);
-                gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
-                break;
-            case "s":
-                normalData = setSphereNormals_smooth(1.0,n_slices_stacks.textContent,n_slices_stacks.textContent);
-                gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
-                break;
         }
     }
    
@@ -161,7 +184,7 @@ function main(){
     drawCube();
 }
    
-function setSphereVertices(radius,slices,stacks){
+function setSuperConicSphereVertices(radius,slices,stacks,s1,s2){
     const vertexData = [];
     let slicesStep = (2*Math.PI) / slices;
     let stacksStep = Math.PI / stacks;
@@ -171,34 +194,34 @@ function setSphereVertices(radius,slices,stacks){
         for(let j=0;j<slices;j++){
             let theta = -Math.PI + j * slicesStep; 
             vertexData.push(...[
-                radius*Math.cos(phi)*Math.cos(theta),
-                radius*Math.cos(phi)*Math.sin(theta),
-                radius*Math.sin(phi)
+                radius*Math.sign(Math.cos(phi))*Math.pow(Math.abs(Math.cos(phi)),s1)*Math.sign(Math.cos(theta))*Math.pow(Math.abs(Math.cos(theta)),s2),
+                radius*Math.sign(Math.cos(phi))*Math.pow(Math.abs(Math.cos(phi)),s1)*Math.sign(Math.sin(theta))*Math.pow(Math.abs(Math.sin(theta)),s2),
+                radius*Math.sign(Math.sin(phi))*Math.pow(Math.abs(Math.sin(phi)),s1)
             ]);
             vertexData.push(...[
-                radius*Math.cos(phi+stacksStep)*Math.cos(theta),
-                radius*Math.cos(phi+stacksStep)*Math.sin(theta),
-                radius*Math.sin(phi+stacksStep)
+                radius*Math.sign(Math.cos(phi+stacksStep))*Math.pow(Math.abs(Math.cos(phi+stacksStep)),s1)*Math.sign(Math.cos(theta))*Math.pow(Math.abs(Math.cos(theta)),s2),
+                radius*Math.sign(Math.cos(phi+stacksStep))*Math.pow(Math.abs(Math.cos(phi+stacksStep)),s1)*Math.sign(Math.sin(theta))*Math.pow(Math.abs(Math.sin(theta)),s2),
+                radius*Math.sign(Math.sin(phi+stacksStep))*Math.pow(Math.abs(Math.sin(phi+stacksStep)),s1)
             ]);
             vertexData.push(...[
-                radius*Math.cos(phi)*Math.cos(theta+slicesStep),
-                radius*Math.cos(phi)*Math.sin(theta+slicesStep),
-                radius*Math.sin(phi)
+                radius*Math.sign(Math.cos(phi))*Math.pow(Math.abs(Math.cos(phi)),s1)*Math.sign(Math.cos(theta+slicesStep))*Math.pow(Math.abs(Math.cos(theta+slicesStep)),s2),
+                radius*Math.sign(Math.cos(phi))*Math.pow(Math.abs(Math.cos(phi)),s1)*Math.sign(Math.sin(theta+slicesStep))*Math.pow(Math.abs(Math.sin(theta+slicesStep)),s2),
+                radius*Math.sign(Math.sin(phi))*Math.pow(Math.abs(Math.sin(phi)),s1)
             ]);
             vertexData.push(...[
-                radius*Math.cos(phi+stacksStep)*Math.cos(theta),
-                radius*Math.cos(phi+stacksStep)*Math.sin(theta),
-                radius*Math.sin(phi+stacksStep)
+                radius*Math.sign(Math.cos(phi+stacksStep))*Math.pow(Math.abs(Math.cos(phi+stacksStep)),s1)*Math.sign(Math.cos(theta))*Math.pow(Math.abs(Math.cos(theta)),s2),
+                radius*Math.sign(Math.cos(phi+stacksStep))*Math.pow(Math.abs(Math.cos(phi+stacksStep)),s1)*Math.sign(Math.sin(theta))*Math.pow(Math.abs(Math.sin(theta)),s2),
+                radius*Math.sign(Math.sin(phi+stacksStep))*Math.pow(Math.abs(Math.sin(phi+stacksStep)),s1)
             ]);
             vertexData.push(...[
-                radius*Math.cos(phi+stacksStep)*Math.cos(theta+slicesStep),
-                radius*Math.cos(phi+stacksStep)*Math.sin(theta+slicesStep),
-                radius*Math.sin(phi+stacksStep)
+                radius*Math.sign(Math.cos(phi+stacksStep))*Math.pow(Math.abs(Math.cos(phi+stacksStep)),s1)*Math.sign(Math.cos(theta+slicesStep))*Math.pow(Math.abs(Math.cos(theta+slicesStep)),s2),
+                radius*Math.sign(Math.cos(phi+stacksStep))*Math.pow(Math.abs(Math.cos(phi+stacksStep)),s1)*Math.sign(Math.sin(theta+slicesStep))*Math.pow(Math.abs(Math.sin(theta+slicesStep)),s2),
+                radius*Math.sign(Math.sin(phi+stacksStep))*Math.pow(Math.abs(Math.sin(phi+stacksStep)),s1)
             ]);
             vertexData.push(...[
-                radius*Math.cos(phi)*Math.cos(theta+slicesStep),
-                radius*Math.cos(phi)*Math.sin(theta+slicesStep),
-                radius*Math.sin(phi)
+                radius*Math.sign(Math.cos(phi))*Math.pow(Math.abs(Math.cos(phi)),s1)*Math.sign(Math.cos(theta+slicesStep))*Math.pow(Math.abs(Math.cos(theta+slicesStep)),s2),
+                radius*Math.sign(Math.cos(phi))*Math.pow(Math.abs(Math.cos(phi)),s1)*Math.sign(Math.sin(theta+slicesStep))*Math.pow(Math.abs(Math.sin(theta+slicesStep)),s2),
+                radius*Math.sign(Math.sin(phi))*Math.pow(Math.abs(Math.sin(phi)),s1)
             ]);
         }
     }
@@ -206,7 +229,7 @@ function setSphereVertices(radius,slices,stacks){
     return vertexData;
 }
    
-function setSphereNormals_flat(radius,slices,stacks){
+function setSuperConicSphereNormals_flat(radius,slices,stacks,s1,s2){
     const normalData = [];
     let slicesStep = (2*Math.PI) / slices;
     let stacksStep = Math.PI / stacks;
@@ -218,39 +241,40 @@ function setSphereNormals_flat(radius,slices,stacks){
         let phi = -Math.PI / 2 + i * stacksStep;
         for(let j=0;j<slices;j++){
             let theta = -Math.PI + j * slicesStep; 
-            let P0 = [
-                radius*Math.cos(phi)*Math.cos(theta),
-                radius*Math.cos(phi)*Math.sin(theta),
-                radius*Math.sin(phi)
-            ];
-            let P1 = [
-                radius*Math.cos(phi+stacksStep)*Math.cos(theta),
-                radius*Math.cos(phi+stacksStep)*Math.sin(theta),
-                radius*Math.sin(phi+stacksStep)
-            ];
-            let P2 = [
-                radius*Math.cos(phi)*Math.cos(theta+slicesStep),
-                radius*Math.cos(phi)*Math.sin(theta+slicesStep),
-                radius*Math.sin(phi)
-            ];
-            let N = crossProduct([P2[0]-P0[0],P2[1]-P0[1],P2[2]-P0[2]],[P1[0]-P0[0],P1[1]-P0[1],P1[2]-P0[2]]);
-            normalData.push(...N);
-            normalData.push(...N);
-            normalData.push(...N);
             P0 = [
-                radius*Math.cos(phi+stacksStep)*Math.cos(theta),
-                radius*Math.cos(phi+stacksStep)*Math.sin(theta),
-                radius*Math.sin(phi+stacksStep)
+                radius*Math.sign(Math.cos(phi))*Math.pow(Math.abs(Math.cos(phi)),s1)*Math.sign(Math.cos(theta))*Math.pow(Math.abs(Math.cos(theta)),s2),
+                radius*Math.sign(Math.cos(phi))*Math.pow(Math.abs(Math.cos(phi)),s1)*Math.sign(Math.sin(theta))*Math.pow(Math.abs(Math.sin(theta)),s2),
+                radius*Math.sign(Math.sin(phi))*Math.pow(Math.abs(Math.sin(phi)),s1)
             ];
             P1 = [
-                radius*Math.cos(phi+stacksStep)*Math.cos(theta+slicesStep),
-                radius*Math.cos(phi+stacksStep)*Math.sin(theta+slicesStep),
-                radius*Math.sin(phi+stacksStep)
+                radius*Math.sign(Math.cos(phi+stacksStep))*Math.pow(Math.abs(Math.cos(phi+stacksStep)),s1)*Math.sign(Math.cos(theta))*Math.pow(Math.abs(Math.cos(theta)),s2),
+                radius*Math.sign(Math.cos(phi+stacksStep))*Math.pow(Math.abs(Math.cos(phi+stacksStep)),s1)*Math.sign(Math.sin(theta))*Math.pow(Math.abs(Math.sin(theta)),s2),
+                radius*Math.sign(Math.sin(phi+stacksStep))*Math.pow(Math.abs(Math.sin(phi+stacksStep)),s1)
             ];
             P2 = [
-                radius*Math.cos(phi)*Math.cos(theta+slicesStep),
-                radius*Math.cos(phi)*Math.sin(theta+slicesStep),
-                radius*Math.sin(phi)
+                radius*Math.sign(Math.cos(phi))*Math.pow(Math.abs(Math.cos(phi)),s1)*Math.sign(Math.cos(theta+slicesStep))*Math.pow(Math.abs(Math.cos(theta+slicesStep)),s2),
+                radius*Math.sign(Math.cos(phi))*Math.pow(Math.abs(Math.cos(phi)),s1)*Math.sign(Math.sin(theta+slicesStep))*Math.pow(Math.abs(Math.sin(theta+slicesStep)),s2),
+                radius*Math.sign(Math.sin(phi))*Math.pow(Math.abs(Math.sin(phi)),s1)
+            ];
+            N = crossProduct([P2[0]-P0[0],P2[1]-P0[1],P2[2]-P0[2]],[P1[0]-P0[0],P1[1]-P0[1],P1[2]-P0[2]]);
+            normalData.push(...N);
+            normalData.push(...N);
+            normalData.push(...N);
+
+            P0 = [
+                radius*Math.sign(Math.cos(phi+stacksStep))*Math.pow(Math.abs(Math.cos(phi+stacksStep)),s1)*Math.sign(Math.cos(theta))*Math.pow(Math.abs(Math.cos(theta)),s2),
+                radius*Math.sign(Math.cos(phi+stacksStep))*Math.pow(Math.abs(Math.cos(phi+stacksStep)),s1)*Math.sign(Math.sin(theta))*Math.pow(Math.abs(Math.sin(theta)),s2),
+                radius*Math.sign(Math.sin(phi+stacksStep))*Math.pow(Math.abs(Math.sin(phi+stacksStep)),s1)
+            ];
+            P1 = [
+                radius*Math.sign(Math.cos(phi+stacksStep))*Math.pow(Math.abs(Math.cos(phi+stacksStep)),s1)*Math.sign(Math.cos(theta+slicesStep))*Math.pow(Math.abs(Math.cos(theta+slicesStep)),s2),
+                radius*Math.sign(Math.cos(phi+stacksStep))*Math.pow(Math.abs(Math.cos(phi+stacksStep)),s1)*Math.sign(Math.sin(theta+slicesStep))*Math.pow(Math.abs(Math.sin(theta+slicesStep)),s2),
+                radius*Math.sign(Math.sin(phi+stacksStep))*Math.pow(Math.abs(Math.sin(phi+stacksStep)),s1)
+            ];
+            P2 = [
+                radius*Math.sign(Math.cos(phi))*Math.pow(Math.abs(Math.cos(phi)),s1)*Math.sign(Math.cos(theta+slicesStep))*Math.pow(Math.abs(Math.cos(theta+slicesStep)),s2),
+                radius*Math.sign(Math.cos(phi))*Math.pow(Math.abs(Math.cos(phi)),s1)*Math.sign(Math.sin(theta+slicesStep))*Math.pow(Math.abs(Math.sin(theta+slicesStep)),s2),
+                radius*Math.sign(Math.sin(phi))*Math.pow(Math.abs(Math.sin(phi)),s1)
             ];
             N = crossProduct([P2[0]-P0[0],P2[1]-P0[1],P2[2]-P0[2]],[P1[0]-P0[0],P1[1]-P0[1],P1[2]-P0[2]]);
             normalData.push(...N);
@@ -259,214 +283,6 @@ function setSphereNormals_flat(radius,slices,stacks){
         }
     }
    
-    return normalData;
-}
-
-function setSphereNormals_smooth(radius,slices,stacks){
-    const normalData = [];
-    let slicesStep = (2*Math.PI) / slices;
-    let stacksStep = Math.PI / stacks;
-
-    let theta = -Math.PI;
-    let phi = -Math.PI/2;
-
-    for(let i=0;i<stacks;i++){
-        let phi = -Math.PI / 2 + i * stacksStep;
-        for(let j=0;j<slices;j++){
-            let theta = -Math.PI + j * slicesStep; 
-            normalData.push(...[
-                radius*Math.cos(phi)*Math.cos(theta),
-                radius*Math.cos(phi)*Math.sin(theta),
-                radius*Math.sin(phi)
-            ]);
-            normalData.push(...[
-                radius*Math.cos(phi+stacksStep)*Math.cos(theta),
-                radius*Math.cos(phi+stacksStep)*Math.sin(theta),
-                radius*Math.sin(phi+stacksStep)
-            ]);
-            normalData.push(...[
-                radius*Math.cos(phi)*Math.cos(theta+slicesStep),
-                radius*Math.cos(phi)*Math.sin(theta+slicesStep),
-                radius*Math.sin(phi)
-            ]);
-            normalData.push(...[
-                radius*Math.cos(phi+stacksStep)*Math.cos(theta),
-                radius*Math.cos(phi+stacksStep)*Math.sin(theta),
-                radius*Math.sin(phi+stacksStep)
-            ]);
-            normalData.push(...[
-                radius*Math.cos(phi+stacksStep)*Math.cos(theta+slicesStep),
-                radius*Math.cos(phi+stacksStep)*Math.sin(theta+slicesStep),
-                radius*Math.sin(phi+stacksStep)
-            ]);
-            normalData.push(...[
-                radius*Math.cos(phi)*Math.cos(theta+slicesStep),
-                radius*Math.cos(phi)*Math.sin(theta+slicesStep),
-                radius*Math.sin(phi)
-            ]);
-        }
-    }
-   
-    return normalData;
-}
-    
-function setCubeVertices(size){
-    let n = size/2;
-    const vertexData = [
-        // Front
-        n, n, n,
-        n, -n, n,
-        -n, n, n,
-        -n, n, n,
-        n, -n, n,
-        -n, -n, n,
-
-        // Left
-        -n, n, n,
-        -n, -n, n,
-        -n, n, -n,
-        -n, n, -n,
-        -n, -n, n,
-        -n, -n, -n,
-
-        // Back
-        -n, n, -n,
-        -n, -n, -n,
-        n, n, -n,
-        n, n, -n,
-        -n, -n, -n,
-        n, -n, -n,
-
-        // Right
-        n, n, -n,
-        n, -n, -n,
-        n, n, n,
-        n, n, n,
-        n, -n, n,
-        n, -n, -n,
-
-        // Top
-        n, n, n,
-        n, n, -n,
-        -n, n, n,
-        -n, n, n,
-        n, n, -n,
-        -n, n, -n,
-
-        // Bottom
-        n, -n, n,
-        n, -n, -n,
-        -n, -n, n,
-        -n, -n, n,
-        n, -n, -n,
-        -n, -n, -n,
-    ];
-    return vertexData;
-}
-    
-function setCubeColors(){
-    const colorData = [
-        // Front
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-
-        // Left
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-
-        // Back
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-
-        // Right
-        1.0, 1.0, 0.0,
-        1.0, 1.0, 0.0,
-        1.0, 1.0, 0.0,
-        1.0, 1.0, 0.0,
-        1.0, 1.0, 0.0,
-        1.0, 1.0, 0.0,
-
-        // Top
-        0.0, 1.0, 1.0,
-        0.0, 1.0, 1.0,
-        0.0, 1.0, 1.0,
-        0.0, 1.0, 1.0,
-        0.0, 1.0, 1.0,
-        0.0, 1.0, 1.0,
-
-        // Bottom
-        1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0,
-        1.0, 1.0, 1.0,
-    ];
-    return colorData;
-}
-    
-function setCubeNormals(){
-    const normalData = [
-        // Front
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-
-        // Left
-        -1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
-
-        // Back
-        0.0, 0.0, -1.0,
-        0.0, 0.0, -1.0,
-        0.0, 0.0, -1.0,
-        0.0, 0.0, -1.0,
-        0.0, 0.0, -1.0,
-        0.0, 0.0, -1.0,
-
-        // Right
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-
-        // Top
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-
-        // Bottom
-        0.0, -1.0, 0.0,
-        0.0, -1.0, 0.0,
-        0.0, -1.0, 0.0,
-        0.0, -1.0, 0.0,
-        0.0, -1.0, 0.0,
-        0.0, -1.0, 0.0,
-    ];
     return normalData;
 }
     
