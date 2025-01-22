@@ -1,0 +1,85 @@
+<!DOCTYPE <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>WebGL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="main.js" defer></script>
+    <script  id="vertex-shader" type="notjs">
+        precision mediump float;
+
+        attribute vec3 aPosition;
+        attribute vec3 aNormal;
+
+        varying vec3 vNormal;
+        varying vec3 vSurfacePosition;
+        
+        uniform mat4 uModelMatrix;
+        uniform mat4 uInverseTransposeModelMatrix;
+        uniform mat4 uViewMatrix;
+        uniform mat4 uProjectionMatrix;
+
+        uniform mat4 uModelViewingProjectionMatrix;
+        
+        void main() {
+            vNormal = mat3(uInverseTransposeModelMatrix) * aNormal;
+            vSurfacePosition = (uModelMatrix * vec4(aPosition,1)).xyz;
+            gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1);
+        }
+    </script>
+    <script  id="fragment-shader" type="notjs">
+        precision mediump float;
+
+        varying vec3 vNormal;
+        varying vec3 vSurfacePosition;
+
+        uniform vec3 uLightPosition[2];
+        uniform vec3 uViewPosition;
+        uniform vec3 uAmbientReflection;
+        uniform vec3 uDiffuseReflection;
+        uniform vec3 uSpecularReflection;
+        uniform float uShininess;
+        
+        void main() {
+            gl_FragColor = vec4(uDiffuseReflection, 1);
+
+            vec3 normal = normalize(vNormal);
+            
+            vec3 surfaceToView = normalize(uViewPosition - vSurfacePosition);
+
+            float light = 0.0;
+            float specular = 0.0;
+            for(int i=0;i<2;i++){
+              vec3 surfaceToLight = uLightPosition[i] - vSurfacePosition;
+              float distance = length(surfaceToLight);
+              surfaceToLight = normalize(surfaceToLight);
+              float attenuation = 1.0 / (distance*distance);
+              light += max(0.0,dot(surfaceToLight,normal)) * attenuation;
+              vec3 halfVector = normalize(surfaceToLight + surfaceToView);
+              if(light > 0.0){
+                specular += pow(max(0.0,dot(normal,halfVector)),uShininess);
+              }
+            }
+
+            gl_FragColor.rgb = 0.1*uAmbientReflection + 0.9*light*uDiffuseReflection;
+            gl_FragColor.rgb += specular*uSpecularReflection;
+        }
+    </script>
+    
+</head>
+<body>
+  <div align="center"> 
+    <p><h3>Two Light Sources</h3></p>
+    <p><h3>Sphere - Number of stacks and slices</h3></p>
+    <p><h3>Flat and Smooth renderization</h3></p>
+    <p><canvas id="canvas" width="500" height="500"></canvas></p>
+    <p><input id="n_slices_stacks" type="range" min="3" max="40"/>
+    Number of slices and stacks: <output id="value_slices_stacks"></output></p>
+    <p>Press 1 for X-Rotation</p>
+    <p>Press 2 for Y-Rotatio</p>
+    <p>Press 3 for Z-Rotatio</p>
+  </div>
+</body>
+</html>
